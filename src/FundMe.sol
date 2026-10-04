@@ -40,26 +40,24 @@ contract FundMe {
     (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
     require(callSuccess, "Call failed");
 }
-
-function cheaperWithdraw() public onlyOwner {
-    // 1. Load storage array into memory once
+     
+     function cheaperWithdraw() public onlyOwner {
+    // 1. Copy storage array s_funders into a memory array (Reads storage ONLY ONCE)
     address[] memory funders = s_funders;
-    uint256 fundersLength = funders.length;
-
-    // 2. Loop through memory array instead of storage array
-    for (uint256 funderIndex = 0; funderIndex < fundersLength; funderIndex++) {
+    
+    // 2. Loop through the memory array instead of storage
+    for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
         address funder = funders[funderIndex];
         s_addressToAmountFunded[funder] = 0;
     }
 
-    // 3. Reset storage array
+    // 3. Reset the array
     s_funders = new address[](0);
 
-    // 4. Transfer balance to owner
+    // 4. Transfer the ETH
     (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
     require(callSuccess, "Call failed");
 }
-     
     modifier onlyOwner() {
         if (msg.sender != i_owner) revert FundMe__NotOwner();
         _;
