@@ -4,8 +4,9 @@ pragma solidity ^0.8.18;
 import {Test, console} from "forge-std/Test.sol";
 import {FundMe} from "../src/FundMe.sol";
 import {DeployFundMe} from "../script/DeployFundMe.s.sol";
+import {ZkSyncChainChecker} from "lib/foundry-devops/src/ZkSyncChainChecker.sol";
 
-contract FundMeTest is Test {
+contract FundMeTest is ZkSyncChainChecker, Test {
     FundMe fundMe;
 
     address USER = makeAddr("alice");
@@ -17,7 +18,6 @@ contract FundMeTest is Test {
         (fundMe, ) = deployFundMe.run();
         vm.deal(USER, STARTING_BALANCE);
     }
-
     function testMinimumDollarIsFive() public view {
         assertEq(fundMe.MINIMUM_USD(), 5e18);
     }
@@ -26,10 +26,10 @@ contract FundMeTest is Test {
         assertEq(fundMe.getOwner(), msg.sender);
     }
 
-    function testPriceFeedVersionIsAccurate() public view {
-        uint256 version = fundMe.getVersion();
-        assertEq(version, 4);
-    }
+   function testPriceFeedVersionIsAccurate() public skipZkSync {
+    uint256 version = fundMe.getVersion();
+    assertEq(version, 4);
+}
 
     function testFundFailsWithoutEnoughETH() public {
         vm.expectRevert();
