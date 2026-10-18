@@ -16,7 +16,7 @@ contract InteractionsTest is ZkSyncChainChecker, Test {
 
     function setUp() external {
         DeployFundMe deploy = new DeployFundMe();
-        (fundMe, ) = deploy.run();
+        (fundMe,) = deploy.run();
         vm.deal(USER, STARTING_BALANCE);
     }
 

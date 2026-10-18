@@ -27,37 +27,37 @@ contract FundMe {
         s_funders.push(msg.sender);
     }
 
-   function withdraw() public onlyOwner {
-    for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {
-        address funder = s_funders[funderIndex];
-        s_addressToAmountFunded[funder] = 0;
+    function withdraw() public onlyOwner {
+        for (uint256 funderIndex = 0; funderIndex < s_funders.length; funderIndex++) {
+            address funder = s_funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
+        }
+
+        // 1. Reset storage array
+        s_funders = new address[](0);
+
+        // 2. Transfer balance to owner
+        (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess, "Call failed");
     }
 
-    // 1. Reset storage array
-    s_funders = new address[](0);
+    function cheaperWithdraw() public onlyOwner {
+        // 1. Copy storage array s_funders into a memory array (Reads storage ONLY ONCE)
+        address[] memory funders = s_funders;
 
-    // 2. Transfer balance to owner
-    (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
-    require(callSuccess, "Call failed");
-}
-     
-     function cheaperWithdraw() public onlyOwner {
-    // 1. Copy storage array s_funders into a memory array (Reads storage ONLY ONCE)
-    address[] memory funders = s_funders;
-    
-    // 2. Loop through the memory array instead of storage
-    for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
-        address funder = funders[funderIndex];
-        s_addressToAmountFunded[funder] = 0;
+        // 2. Loop through the memory array instead of storage
+        for (uint256 funderIndex = 0; funderIndex < funders.length; funderIndex++) {
+            address funder = funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
+        }
+
+        // 3. Reset the array
+        s_funders = new address[](0);
+
+        // 4. Transfer the ETH
+        (bool callSuccess,) = payable(msg.sender).call{value: address(this).balance}("");
+        require(callSuccess, "Call failed");
     }
-
-    // 3. Reset the array
-    s_funders = new address[](0);
-
-    // 4. Transfer the ETH
-    (bool callSuccess, ) = payable(msg.sender).call{value: address(this).balance}("");
-    require(callSuccess, "Call failed");
-}
     modifier onlyOwner() {
         if (msg.sender != i_owner) revert FundMe__NotOwner();
         _;
@@ -87,6 +87,7 @@ contract FundMe {
     function getPriceFeed() external view returns (AggregatorV3Interface) {
         return s_priceFeed;
     }
+
     function getVersion() public view returns (uint256) {
         return s_priceFeed.version();
     }

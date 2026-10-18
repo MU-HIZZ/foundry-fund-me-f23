@@ -15,26 +15,20 @@ contract FundFundMe is Script {
     }
 
     function run() external {
-        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment(
-            "FundMe",
-            block.chainid
-        );
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("FundMe", block.chainid);
         fundFundMe(mostRecentlyDeployed);
     }
 }
 
 contract WithdrawFundMe is Script {
     function withdrawFundMe(address mostRecentlyDeployed) public {
-    vm.startBroadcast();
-    FundMe(payable(mostRecentlyDeployed)).withdraw();
-    vm.stopBroadcast();
-}
+        vm.startBroadcast();
+        FundMe(payable(mostRecentlyDeployed)).withdraw();
+        vm.stopBroadcast();
+    }
 
     function run() external {
-        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment(
-            "FundMe",
-            block.chainid
-        );
+        address mostRecentlyDeployed = DevOpsTools.get_most_recent_deployment("FundMe", block.chainid);
         withdrawFundMe(mostRecentlyDeployed);
     }
 }
